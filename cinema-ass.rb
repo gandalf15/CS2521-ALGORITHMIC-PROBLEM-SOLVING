@@ -6,6 +6,17 @@ class Matrix
   end
 end
 
+def first_come(capacity, groups)
+	# heuristic first come first serve
+	seated_groups_first_serve = []
+	groups.each_with_index {|group, index| 
+		if capacity >= group then
+			capacity -= group
+			seated_groups_first_serve << index
+		end
+	}
+	return seated_groups_first_serve << capacity
+end
 def knapsack_optimal_2 (capacity, groups)
 	value_matrix = Matrix.build(groups.length+1, capacity+1) {|row,col| 0}
 	wanted_groups_matrix = Matrix.build(groups.length+1, capacity+1) {|row,col| 0}
@@ -158,21 +169,14 @@ capacity = gets.chomp.to_i
 p "Write number of groups: "
 no_of_groups = gets.chomp.to_i
 groups = gen_groups_ary(capacity,no_of_groups)
-
-# heuristic first come first serve
-capacity_first_serve = capacity
-seated_groups_first_serve = []
-groups.each_with_index {|group, index| 
-	if capacity_first_serve >= group then
-		capacity_first_serve -= group
-		seated_groups_first_serve << index
-	end
-}
 p "Array of groups is: "
 p groups
+# first come solution
 p "First come first serve heuristic - seated groups are: "
-p seated_groups_first_serve
-p "First come first serve heuristic - left capacity: " + capacity_first_serve.to_s
+first_come_result = first_come(capacity,groups)
+left_capacity_first = first_come_result.pop
+p first_come_result
+p "First come first serve heuristic - left capacity: " + left_capacity_first.to_s
 p "=================================================================================="
 # heuristic solution with mergesort n log n
 capacity_heur = capacity
@@ -209,12 +213,18 @@ p "Optimal solution - seated groups are: "
 p optimal_result
 p "Optimal solution - left capacity: " + left_capacity_optimal.to_s
 p "==================================================================================="
-p "Sorted heuristic left seats minus first come left seats: "+ (capacity_first_serve-capacity_heur).to_s + " seats."
+p "Sorted heuristic left seats minus first come left seats: "+ (left_capacity_first-capacity_heur).to_s + " seats."
 p "Optimal solution is better than Sorted heuristic about: " + (capacity_heur-left_capacity_optimal).to_s + " seats."
-p "Optimal solution is better than first come first serve about: " + (capacity_first_serve-left_capacity_optimal).to_s + " seats."
+p "Optimal solution is better than first come first serve about: " + (left_capacity_first-left_capacity_optimal).to_s + " seats."
+
+p "BENCHMARK OF mergesort heuristic and counting sort"
+Benchmark.bmbm do |x|
+  x.report("mergesort") { knapsack_optimal(capacity,groups) }
+  x.report("counting sort")  { knapsack_optimal_2(capacity,groups)  }
+end
 
 =begin
-#benchmark
+#benchmark for optimal solution
 p "BENCHMARK OF OPTIMAL SOLUTION"
 Benchmark.bmbm do |x|
   x.report("optimal solution with expanding matrix rows") { knapsack_optimal(capacity,groups) }
