@@ -8,47 +8,39 @@ end
 
 def first_come(capacity, groups)
 	# heuristic first come first serve
-	seated_groups_first_serve = []
+	seated_groups = []
 	groups.each_with_index {|group, index| 
 		if capacity >= group then
 			capacity -= group
-			seated_groups_first_serve << index
+			seated_groups << index
 		end
 	}
-	return seated_groups_first_serve << capacity
+	return seated_groups << capacity
 end
-def knapsack_optimal_2 (capacity, groups)
-	value_matrix = Matrix.build(groups.length+1, capacity+1) {|row,col| 0}
-	wanted_groups_matrix = Matrix.build(groups.length+1, capacity+1) {|row,col| 0}
-	groups.unshift(0)
-	groups_length = groups.length
-	for i in 0..groups_length-1
-		for j in 0..capacity
-			if i == 0 then
-				value_matrix[i,j] = 0
-			else
-				if j >= groups[i] then
-					if value_matrix.[](i-1,j) >= groups[i]+value_matrix.[](i-1,j-groups[i]) then
-						value_matrix[i,j] = value_matrix.[](i-1,j)
-						wanted_groups_matrix[i,j] = 0
-					else
-						value_matrix[i,j] = groups[i]+value_matrix.[](i-1,j-groups[i])
-						wanted_groups_matrix[i,j] = 1
-					end
 
-				else
-					value_matrix[i,j] = value_matrix.[](i-1,j)
-					wanted_groups_matrix[i,j] = 0
-				end
-			end
+def merge_sort_heur(capacity, groups)
+	seated_groups = []
+	sorted_groups = merge_sort(groups)
+	sorted_groups.each {|group| 
+		if capacity >= group then
+			capacity -= group
+			seated_groups << groups.index(group)
 		end
-		if value_matrix.[](i,j) == capacity then
-			return knapsack_result_lookup(wanted_groups_matrix, groups)
-		end
-	end
-	return knapsack_result_lookup(wanted_groups_matrix, groups)
+	}
+	return seated_groups << capacity
 end
-#end of ideal solution - DP knapsack
+
+def counting_heur(capacity,groups)
+	seated_groups = []
+	sorted_groups = counting_sort(groups)
+	sorted_groups.each {|group| 
+		if capacity >= group then
+			capacity -= group
+			seated_groups << groups.index(group)
+		end
+	}
+	return seated_groups << capacity
+end
 # start of the ideal solution - DP knapsack - my own work
 def double_matrix_rows(m, max_rows)
 	num_of_rows = m.row_count
@@ -144,12 +136,12 @@ def counting_sort(array)
   array_min = array.min
   markings = [0] * (array_max - array_min + 1)
   array.each do |a|
-    markings[a - array_min] += 1
+    markings[array_max - a] += 1
   end
   res = []
   markings.length.times do |i|
     markings[i].times do
-      res << i + array_min;
+      res << array_max - i;
     end
   end
   res
@@ -179,32 +171,18 @@ p first_come_result
 p "First come first serve heuristic - left capacity: " + left_capacity_first.to_s
 p "=================================================================================="
 # heuristic solution with mergesort n log n
-capacity_heur = capacity
-seated_groups_heur = []
-sorted_groups = merge_sort(groups)
-sorted_groups.each {|group| 
-	if capacity_heur >= group then
-		capacity_heur -= group
-		seated_groups_heur << groups.index(group)
-	end
-}
-p "Sorted heuristic - seated groups are: "
-p seated_groups_heur
-p "Sorted heuristic - left capacity: " + capacity_heur.to_s
+merge_sort_result = merge_sort_heur(capacity,groups)
+left_capacity_merge = merge_sort_result.pop
+p "Merge Sorted heuristic - seated groups are: "
+p merge_sort_result
+p "Merge Sorted heuristic - left capacity: " + left_capacity_merge.to_s
 p "==================================================================================="
 # heuristic solution with counting sort O(n)
-capacity_counting = capacity
-seated_groups_counting = []
-sorted_groups_counting = counting_sort(groups)
-sorted_groups.each {|group| 
-	if capacity_counting >= group then
-		capacity_counting -= group
-		seated_groups_counting << groups.index(group)
-	end
-}
+counting_sort_result = counting_heur(capacity,groups)
+left_capacity_counting = counting_sort_result.pop
 p "Counting Sorted heuristic - seated groups are: "
-p seated_groups_heur
-p "Counting Sorted heuristic - left capacity: " + capacity_counting.to_s
+p counting_sort_result
+p "Counting Sorted heuristic - left capacity: " + left_capacity_counting.to_s
 p "==================================================================================="
 # optimal solution
 optimal_result = knapsack_optimal(capacity,groups)
@@ -213,21 +191,13 @@ p "Optimal solution - seated groups are: "
 p optimal_result
 p "Optimal solution - left capacity: " + left_capacity_optimal.to_s
 p "==================================================================================="
-p "Sorted heuristic left seats minus first come left seats: "+ (left_capacity_first-capacity_heur).to_s + " seats."
-p "Optimal solution is better than Sorted heuristic about: " + (capacity_heur-left_capacity_optimal).to_s + " seats."
+p "Sorted heuristic left seats minus first come left seats: "+ (left_capacity_first - left_capacity_merge).to_s + " seats."
+p "Optimal solution is better than Sorted heuristic about: " + (left_capacity_merge - left_capacity_optimal).to_s + " seats."
 p "Optimal solution is better than first come first serve about: " + (left_capacity_first-left_capacity_optimal).to_s + " seats."
 
-p "BENCHMARK OF mergesort heuristic and counting sort"
+p "BENCHMARK FOR ALL ALGORITHMS"
 Benchmark.bmbm do |x|
-  x.report("mergesort") { knapsack_optimal(capacity,groups) }
-  x.report("counting sort")  { knapsack_optimal_2(capacity,groups)  }
-end
-
-=begin
-#benchmark for optimal solution
-p "BENCHMARK OF OPTIMAL SOLUTION"
-Benchmark.bmbm do |x|
+  x.report("mergesort") { merge_sort_heur(capacity,groups) }
+  x.report("counting sort")  { counting_heur(capacity,groups)  }
   x.report("optimal solution with expanding matrix rows") { knapsack_optimal(capacity,groups) }
-  x.report("optimal solution with preconstructed whole matrix")  { knapsack_optimal_2(capacity,groups)  }
 end
-=end
