@@ -5,7 +5,6 @@ class Matrix
     @rows[i][j] = x
   end
 end
-
 def first_come(capacity, groups)
 	# heuristic first come first serve
 	seated_groups = []
@@ -17,7 +16,6 @@ def first_come(capacity, groups)
 	}
 	return seated_groups << capacity
 end
-
 def merge_sort_heur(capacity, groups)
 	seated_groups = []
 	sorted_groups = merge_sort(groups)
@@ -29,7 +27,6 @@ def merge_sort_heur(capacity, groups)
 	}
 	return seated_groups << capacity
 end
-
 def counting_heur(capacity,groups)
 	seated_groups = []
 	sorted_groups = counting_sort(groups)
@@ -53,7 +50,6 @@ def double_matrix_rows(m, max_rows)
 	end
 	return m = Matrix.rows(m)	
 end
-
 def knapsack_result_lookup(wanted_groups_matrix,groups)
 	chosen_groups_indexes = []
 	i = wanted_groups_matrix.row_count-1
@@ -69,7 +65,6 @@ def knapsack_result_lookup(wanted_groups_matrix,groups)
 	end
 	return chosen_groups_indexes << j
 end
-
 def knapsack_optimal (capacity, groups)
 	value_matrix = Matrix.build(2, capacity+1) {|row,col| 0}
 	wanted_groups_matrix = Matrix.build(2, capacity+1) {|row,col| 0}
@@ -118,7 +113,6 @@ def merge_sort(array)
     merge(left, right)
   end
 end
-
 def merge(left, right)
   if left.empty?
     return right
@@ -194,7 +188,7 @@ p "=============================================================================
 p "Sorted heuristic left seats minus first come left seats: "+ (left_capacity_first - left_capacity_merge).to_s + " seats."
 p "Optimal solution is better than Sorted heuristic about: " + (left_capacity_merge - left_capacity_optimal).to_s + " seats."
 p "Optimal solution is better than first come first serve about: " + (left_capacity_first-left_capacity_optimal).to_s + " seats."
-
+# start benchmark
 p "BENCHMARK FOR ALL ALGORITHMS"
 Benchmark.bmbm do |x|
   x.report("mergesort") { merge_sort_heur(capacity,groups) }
