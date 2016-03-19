@@ -117,9 +117,12 @@ def convex_cut_and_paste(tangents, left_convex, right_convex):
 
 
 
-def convex_hull(array):
+def convex_hell(array):
+	#array comes already sorted based on X coordinates
 	try:
-		array
+		left_half = array // 2
+		right_half = array[left_half:]
+		
 	except ValueError:
 		print("The convex hull function takes array of arrays with two integer inside.")
 
