@@ -14,7 +14,7 @@ def gen_rand_uniq_points(x_range, y_range, n):
 	except ValueError:
 		print('Sample size exceeded population size.')
 
-def get_y_intersect(point_a, point_b, x_of_line):
+def get_y_intersection(point_a, point_b, x_of_line):
 	try:
 		#define where is the vertical line
 		x_coord_of_line = x_of_line
@@ -29,29 +29,38 @@ def get_y_intersect(point_a, point_b, x_of_line):
 		print ("After 7.5 million years....",
 		"The Answer to the Ultimate Question of Life, The Universe, and Everything is 42.")
 
-def get_tangents(left_convex, right_convex):
+def get_tangents(left_hell, right_hell):
 	# points are named a1,a2... clockwise for left convex
 	# points are named b1,b2,... clockwise for right convex
 	# for left convex a1 is the right most point
 	# for right convex b1 is the left most point
 	# Y is the vertical line between them
 	#here starts get upper tangent
+
 	#somehow shift the points in array so left_convex on index 0 has
 	#the right most point. Do the same with right_convex[0] has the left most point
 	# also create a vertical line between these points.
+
+
+	left_hell_most_right_point = itemgetter()
+	right_hell_most_right_point = itemgetter()
+	left_convex = deque(left_hell)
+	right_convex = deque(right_hell)
+
+
 
 	num_of_left_points = len(left_convex)
 	num_of_right_points = len(left_convex)
 	x_of_line = (point_a[0]+point_b[0])/2
 	i = 0	# the most right point on X
 	j = 0	#the most left point on X
-	while (get_y_intersect(left_convex[i],right_convex[j+1], x_of_line) >
-			get_y_intersect(left_convex[i],right_convex[j], x_of_line)
-			or get_y_intersect(left_convex[i-1],right_convex[j], x_of_line) >
-			get_y_intersect(left_convex[i],right_convex[j], x_of_line)):
+	while (get_y_intersection(left_convex[i],right_convex[j+1], x_of_line) >
+			get_y_intersection(left_convex[i],right_convex[j], x_of_line)
+			or get_y_intersection(left_convex[i-1],right_convex[j], x_of_line) >
+			get_y_intersection(left_convex[i],right_convex[j], x_of_line)):
 
-		if (get_y_intersect(left_convex[i],right_convex[j+1], x_of_line) >
-			get_y_intersect(left_convex[i],right_convex[j], x_of_line)):
+		if (get_y_intersection(left_convex[i],right_convex[j+1], x_of_line) >
+			get_y_intersection(left_convex[i],right_convex[j], x_of_line)):
 			j = (j+1)%num_of_right_points		#move right
 			# mod is there because after iterate to the last point in array
 			# we want to return to the 0 index, so the last point is connected with the first
@@ -64,13 +73,13 @@ def get_tangents(left_convex, right_convex):
 	#here starts get lower tangent
 	i = 0	# reset the most right point on X
 	j = 0	# reset the most left point on X
-	while (get_y_intersect(left_convex[i],right_convex[j-1], x_of_line) >
-			get_y_intersect(left_convex[i],right_convex[j], x_of_line)
-			or get_y_intersect(left_convex[i+1],right_convex[j], x_of_line) >
-			get_y_intersect(left_convex[i],right_convex[j], x_of_line)):
+	while (get_y_intersection(left_convex[i],right_convex[j-1], x_of_line) >
+			get_y_intersection(left_convex[i],right_convex[j], x_of_line)
+			or get_y_intersection(left_convex[i+1],right_convex[j], x_of_line) >
+			get_y_intersection(left_convex[i],right_convex[j], x_of_line)):
 
-		if (get_y_intersect(left_convex[i],right_convex[j-1], x_of_line) >
-			get_y_intersect(left_convex[i],right_convex[j], x_of_line)):
+		if (get_y_intersection(left_convex[i],right_convex[j-1], x_of_line) >
+			get_y_intersection(left_convex[i],right_convex[j], x_of_line)):
 			j = (j-1)%num_of_right_points		#move right
 			# mod is there because after iterate to the last point in array
 			# we want to return to the 0 index, so the last point is connected with the first
@@ -83,7 +92,7 @@ def get_tangents(left_convex, right_convex):
 	tangents = [upper_tangent,lower_tangent]
 	return tangents
 
-def convex_cut_and_paste(tangents, left_convex, right_convex):
+def merge_convex_hells(tangents, left_convex, right_convex):
 	upper_tangent = tangents[0]	#extract lower tangent
 	lower_tangent = tangents[1]	#extract upper tangent
 	num_of_left_points = len(left_convex)
@@ -112,17 +121,24 @@ def convex_cut_and_paste(tangents, left_convex, right_convex):
 			break
 		else:
 			new_convex.append(left_convex[i])
-	return new_convex	#this is new convex hull without inner points
+	return new_convex	#this is new convex hell without inner points
 
 
 
 
-def convex_hell(array):
+def make_convex_hell(array):
 	#array comes already sorted based on X coordinates
 	try:
-		left_half = array // 2
-		right_half = array[left_half:]
-		
+		if len(array) < 4:
+			return array	#this is base case when 3 points are convex hell
+		else:
+			length = len(array)
+			left_convex = make_convex_hell(array[0:length // 2])
+			right_convex = make_convex_hell(array[length // 2:])
+			tangents = get_tangents(left_convex, right_convex)
+			new_convex_hell = merge_convex_hells(tangents, left_convex, right_convex)
+		return new_convex_hell
+
 	except ValueError:
 		print("The convex hull function takes array of arrays with two integer inside.")
 
@@ -131,8 +147,8 @@ try:
 	uniq_points = gen_rand_uniq_points(10,10,6)
 	#sort based on x coordinate
 	uniq_points = sorted(uniq_points, key=itemgetter(0))
-	uniq_points = deque(uniq_points)
-	print (uniq_points)
+	convex_hell = make_convex_hell(uniq_points)
+	print (convex_hell)
 
 except KeyboardInterrupt:
 	print ("  Quit")
