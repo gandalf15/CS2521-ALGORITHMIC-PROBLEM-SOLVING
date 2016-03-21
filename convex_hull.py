@@ -16,7 +16,7 @@ def gen_rand_uniq_points(x_range, y_range, n):
 
 def get_y_intersection(point_a, point_b, x_of_line):
 	try:
-		print(point_a, point_b, x_of_line)
+		print("get Y intersection: ",point_a, point_b, x_of_line)
 		#define where is the vertical line
 		x_coord_of_line = x_of_line
 		# calculate the slope between two points
@@ -24,7 +24,7 @@ def get_y_intersection(point_a, point_b, x_of_line):
 		#calculate the point where line between points a and b intersects with vertical line
 		y_coord_of_intersection = point_a[1]+((x_coord_of_line - point_a[0])*slope)
 		#return float y_coord_of_intersection
-		print(y_coord_of_intersection)
+		print("y_coord_of_intersection: ", y_coord_of_intersection)
 		return y_coord_of_intersection
 
 	except ZeroDivisionError:
@@ -46,8 +46,8 @@ def get_tangents(left_hell, right_hell):
 	num_of_right_points = len(right_hell)
 	x_of_line = float((left_hell[left_hell_most_right_index][0] +\
 	 			right_hell[right_hell_most_left_index][0])/2.0)
-	print(left_hell)
-	print(right_hell)
+	print("get_tangents from left_hell: ", left_hell)
+	print("get_tangents from right_hell: ", right_hell)
 	# if base case then order the points clockwise
 	if num_of_left_points < 4:
 		if num_of_left_points > 2:	#exactly 3 points then - do some magic please
@@ -74,7 +74,8 @@ def get_tangents(left_hell, right_hell):
 	#now the arrays are ordered clockwise form the middle line
 	i = 0	# the most right point on X in left hell
 	j = 0	#the most left point on X in right hell
-
+	print("already numbered left hell: ", left_hell)
+	print("already numbered right hell: ", right_hell)
 	result1 = get_y_intersection(left_hell[i],right_hell[(j+1)%num_of_right_points], x_of_line)
 	result2 = get_y_intersection(left_hell[i],right_hell[j], x_of_line)
 	result3 = get_y_intersection(left_hell[(i-1)%num_of_left_points],right_hell[j], x_of_line)
@@ -144,29 +145,28 @@ def merge_convex_hells(left_convex, right_convex, tangents, indices):
 	#start with upper_tangent
 	print("left_convex ", left_convex)
 	print("right_convex ", right_convex)
+	print("old indicis: ", indices)
 	new_convex = [left_convex[upper_tangent[0]]]
-	next_point = right_convex[upper_tangent[1]]
-	if next_point != right_convex[lower_tangent[1]]:
+	next_point = upper_tangent[1]
+	if next_point != lower_tangent[1]:
 		new_convex.append(right_convex[upper_tangent[1]])
 		next_point = (upper_tangent[1]+1)%num_of_right_points
 		while next_point != lower_tangent[1]:
 			new_convex.append(right_convex[next_point])
 			next_point = (next_point + 1)%num_of_right_points
-		new_convex.append(right_convex[next_point])
-	else:
-		new_convex.append(next_point)	# if ther is only one point for upper and lower tangents
+
+	new_convex.append(right_convex[next_point])	# if ther is only one point for upper and lower tangents
 		#then append the right lower bound
-	next_point = left_convex[lower_tangent[0]]
-	if next_point != left_convex[upper_tangent[0]]:
+	next_point = lower_tangent[0]
+	if next_point != upper_tangent[0]:
 		new_convex.append(left_convex[lower_tangent[0]])
 		next_point = (lower_tangent[0] + 1)%num_of_left_points
 		while next_point != upper_tangent[0]:
 			new_convex.append(left_convex[next_point])
 			next_point = (next_point + 1)%num_of_left_points
-	else:
-		new_convex.append(next_point)
 
 	new_convex.append(indices)
+	print("new merged convex with indicis: ", new_convex)
 	return new_convex	#this is new convex hell without inner points
 
 
@@ -179,6 +179,7 @@ def make_convex_hell(array):
 			most_left = 0	#initialize with some index, cannot be 0
 			most_right = len(array)-1	#initialize with some index, cannot be 0
 			indices = [most_left, most_right]
+			print("base case array and indicis: ", array, indices)
 			array.append(indices)	#at the end append indices of the left and right points
 			return array	#this is base case when 3 points are convex hell
 		else:
@@ -198,10 +199,10 @@ def make_convex_hell(array):
 
 try:
 	#generate random, but uniq points no x and y coordinates are same
-	uniq_points = gen_rand_uniq_points(10,10,7)
+	#uniq_points = gen_rand_uniq_points(10,10,7)
 	#sort based on x coordinate
-	#uniq_points = [[2, 9], [0, 0], [1, 8], [4, 3], [6, 6], [9, 5]]
-	#uniq_points = [[3, 3], [0, 7], [2, 4], [7, 2], [8, 5], [9, 1]]
+	uniq_points = [[0, 6], [2, 0], [3, 3],[4, 2], [6, 7],[8, 5], [9, 4]]
+
 	uniq_points = sorted(uniq_points, key=itemgetter(0))
 	convex_hell = make_convex_hell(uniq_points)
 	indices = convex_hell.pop()
