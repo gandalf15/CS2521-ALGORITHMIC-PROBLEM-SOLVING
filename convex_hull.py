@@ -1,4 +1,5 @@
 import random
+import time
 import matplotlib.pyplot as plt
 from operator import itemgetter
 def gen_rand_uniq_points(x_range, y_range, n):
@@ -247,14 +248,51 @@ def make_convex_hell(array):
 	except ValueError:
 		print("The convex hull function takes array of arrays with two integer inside.")
 
-try:
-	#generate random, but uniq points no x and y coordinates are same
-	uniq_points = gen_rand_uniq_points(10000,10000,600)
-	#sort based on x coordinate
-	#uniq_points = [[0, 3], [1, 0], [2, 9],[3, 1], [4, 7],[5, 6], [7, 5]]
+def benchmark():
+	n = 1000000
+	x = n+1
+	y = n+1
+	j = 0
+	f = open('output.txt', 'w')
+	while n > 0:
+		uniq_points = gen_rand_uniq_points(x,y,n)
+		uniq_points = sorted(uniq_points, key=itemgetter(0))
+		time.sleep(0.2)
+		start = time.clock()
+		make_convex_hell(uniq_points)
+		elapsed = time.clock()
+		f.write('{} = {}\n'.format(n, elapsed-start))
+		j += 1
+		if j == 5:
+			n = 500000
+		elif j== 10:
+			n = 100000
 
+		elif j == 15:
+			n = 10000
+
+		elif j == 20:
+			n = 1000
+		elif j == 25:
+			n = 100
+		elif j == 30:
+			n = 10
+		elif j == 35:
+			n = 0
+			f.close
+
+try:
+	benchmark()
+	'''
+	#generate random, but uniq points no x and y coordinates are same
+	uniq_points = gen_rand_uniq_points(500,500,100)
+	#sort based on x coordinate
 	uniq_points = sorted(uniq_points, key=itemgetter(0))
+	start = time.clock()
 	convex_hell = make_convex_hell(uniq_points)
+	elapsed = time.clock()
+	print(elapsed - start)
+
 	indices = convex_hell.pop()
 	proces_mark = convex_hell.pop()
 	#print("indices at the end ", indices)
@@ -262,7 +300,7 @@ try:
 
 	x_points = []
 	y_points = []
-	plt.axis([-100, 10100, -100, 10100])
+	plt.axis([-100, 1000, -100, 1000])
 	for point in uniq_points:
 		plt.plot(point[0],point[1], 'ro')
 	for point in convex_hell:
@@ -272,6 +310,6 @@ try:
 	y_points.append(convex_hell[0][1])
 	plt.plot(x_points,y_points)
 	plt.show()
-
+	'''
 except KeyboardInterrupt:
 	print ("  Quit")
