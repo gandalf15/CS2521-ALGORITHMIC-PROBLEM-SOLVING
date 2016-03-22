@@ -16,7 +16,7 @@ def gen_rand_uniq_points(x_range, y_range, n):
 
 def get_y_intersection(point_a, point_b, x_of_line):
 	try:
-		print("get Y intersection: ",point_a, point_b, x_of_line)
+		#print("get Y intersection: ",point_a, point_b, x_of_line)
 		#define where is the vertical line
 		x_coord_of_line = x_of_line
 		# calculate the slope between two points
@@ -24,7 +24,7 @@ def get_y_intersection(point_a, point_b, x_of_line):
 		#calculate the point where line between points a and b intersects with vertical line
 		y_coord_of_intersection = point_a[1]+((x_coord_of_line - point_a[0])*slope)
 		#return float y_coord_of_intersection
-		print("y_coord_of_intersection: ", y_coord_of_intersection)
+		#print("y_coord_of_intersection: ", y_coord_of_intersection)
 		return y_coord_of_intersection
 
 	except ZeroDivisionError:
@@ -40,46 +40,55 @@ def get_tangents(left_hell, right_hell):
 	#here starts get upper tangent
 	left_indices = left_hell.pop()	#get indices from the list
 	right_indices = right_hell.pop()
+	left_proces_mark = left_hell.pop()
+	right_proces_mark = right_hell.pop()
 	left_hell_most_right_index = left_indices[1]
 	right_hell_most_left_index = right_indices[0]
 	num_of_left_points = len(left_hell)
 	num_of_right_points = len(right_hell)
 	x_of_line = float((left_hell[left_hell_most_right_index][0] +\
 	 			right_hell[right_hell_most_left_index][0])/2.0)
-	print("get_tangents from left_hell: ", left_hell)
-	print("get_tangents from right_hell: ", right_hell)
+	#print("get_tangents from left_hell: ", left_hell)
+	#print("get_tangents from right_hell: ", right_hell)
 	# if base case then order the points clockwise
-	if num_of_left_points < 4:
+	if num_of_left_points < 4 and left_proces_mark == 0:
 		if num_of_left_points > 2:	#exactly 3 points then - do some magic please
 			if (get_y_intersection(left_hell[0],left_hell[2],left_hell[1][0]) < left_hell[1][1]):
 				left_hell = [left_hell[2],left_hell[0],left_hell[1]]
 				left_indices = [1,0]
 				left_hell_most_right_index = 0
+				left_proces_mark == 1
 				#this created clockwise order from right, bottom and up
 			else:
 				left_hell = [left_hell[2],left_hell[1],left_hell[0]]
 				left_indices = [2,0]
 				left_hell_most_right_index = 0
+				left_proces_mark == 1
 		else:	#exactly 2 points
 			left_hell = [left_hell[1],left_hell[0]]
 			left_indices = [1,0]
 			left_hell_most_right_index = 0
-	if num_of_right_points < 4:
+			left_proces_mark == 1
+	if num_of_right_points < 4 and right_proces_mark == 0:
 		if num_of_right_points > 2:	# here must be different num for same clockwise
 			if (get_y_intersection(right_hell[0],right_hell[2],right_hell[1][0]) < right_hell[1][1]):
 				right_hell = [right_hell[0],right_hell[1],right_hell[2]]
 				right_indices = [0,2]
 				right_hell_most_left_index = 0
+				right_proces_mark = 1
 			else:
 				right_hell = [right_hell[0],right_hell[2],right_hell[1]]
 				right_indices = [0,1]
 				right_hell_most_left_index = 0
+				right_proces_mark = 1
 		else:
 			right_indices = [0,1]
 			right_hell_most_left_index = 0
+			right_proces_mark = 1
 	#now the arrays are ordered clockwise form the middle line
 	i = left_hell_most_right_index	# the most right point on X in left hell
 	j = right_hell_most_left_index	#the most left point on X in right hell
+	'''
 	print("already numbered left hell: ", left_hell)
 	print("already numbered right hell: ", right_hell)
 	result1 = get_y_intersection(left_hell[i],right_hell[(j+1)%num_of_right_points], x_of_line)
@@ -88,7 +97,7 @@ def get_tangents(left_hell, right_hell):
 	result4 = get_y_intersection(left_hell[i],right_hell[j], x_of_line)
 	print(result1, " > ", result2)
 	print(result3," > ", result4)
-
+	'''
 	while (get_y_intersection(left_hell[i],right_hell[(j+1)%num_of_right_points], x_of_line) >
 			get_y_intersection(left_hell[i],right_hell[j], x_of_line)
 			or get_y_intersection(left_hell[(i-1)%num_of_left_points],right_hell[j], x_of_line) >
@@ -109,14 +118,14 @@ def get_tangents(left_hell, right_hell):
 	#here starts get lower tangent
 	i = left_hell_most_right_index	# reset the most right point on X
 	j = right_hell_most_left_index	# reset the most left point on X
-
+	'''
 	result5 = get_y_intersection(left_hell[i],right_hell[(j-1)%num_of_right_points], x_of_line)
 	result6 = get_y_intersection(left_hell[i],right_hell[j], x_of_line)
 	result7 = get_y_intersection(left_hell[(i+1)%num_of_left_points],right_hell[j], x_of_line)
 	result8 = get_y_intersection(left_hell[i],right_hell[j], x_of_line)
 	print(result5, " < ", result6)
 	print(result7," < ", result8)
-
+	'''
 	while (get_y_intersection(left_hell[i],right_hell[(j-1)%num_of_right_points], x_of_line) <
 			get_y_intersection(left_hell[i],right_hell[j], x_of_line)
 			or get_y_intersection(left_hell[(i+1)%num_of_left_points],right_hell[j], x_of_line) <
@@ -137,65 +146,76 @@ def get_tangents(left_hell, right_hell):
 	tangents = [upper_tangent,lower_tangent]
 	#this is not correct? maybe???
 	indices = [left_indices[0], right_indices[1]]	# send further left, right points
-
+	right_hell.append(right_proces_mark)
+	left_hell.append(left_proces_mark)
 	result = [left_hell,right_hell,tangents,indices]
 	return result
 
 def merge_convex_hells(left_convex, right_convex, tangents, indices):
 	upper_tangent = tangents[0]	#extract upper tangent
 	lower_tangent = tangents[1]	#extract lower tangent
+	left_proces_mark = left_convex.pop()
+	right_proces_mark = right_convex.pop()
 	num_of_left_points = len(left_convex)
 	num_of_right_points = len(right_convex)
 	most_left = indices[0]
 	most_right = indices[1]
-	print("upper_tangent ", upper_tangent)
-	print("lower_tangent ", lower_tangent)
+	#print("upper_tangent ", upper_tangent)
+	#print("lower_tangent ", lower_tangent)
 	#start with upper_tangent
-	print("left_convex ", left_convex)
-	print("right_convex ", right_convex)
-	print("old indicis: ", indices)
+	#print("left_convex ", left_convex)
+	#print("right_convex ", right_convex)
+	#print("old indicis: ", indices)
 
 	if most_left == upper_tangent[0]:	# if the upper tangent is most left point
 		new_convex = [left_convex[upper_tangent[0]]]
 		most_left = 0
+		#print("adding upper tangent: ", most_left)
 	else:
 		new_convex = [left_convex[upper_tangent[0]]]
 
 	next_point = upper_tangent[1]
-	if most_right == next_point:	# if the upper tangent is most right point
+	if indices[1] == next_point:	# if the upper tangent is most right point
 		most_right = 1
+		#print("adding most_right: ",most_right)
 
 	if next_point != lower_tangent[1]:
 		new_convex.append(right_convex[upper_tangent[1]])
 		next_point = (upper_tangent[1]+1)%num_of_right_points
-		if most_right == next_point:
+		if indices[1] == next_point:
 			most_right = 2
+			#print("adding most_right: ",most_right)
 		while next_point != lower_tangent[1]:
 			new_convex.append(right_convex[next_point])
-			if most_right == next_point:
+			if indices[1] == next_point:
 				most_right = len(new_convex)-1
+				#print("adding most_right: ",most_right)
 			next_point = (next_point + 1)%num_of_right_points
 
 	new_convex.append(right_convex[next_point])	# if ther is only one point for upper and lower tangents
-	if most_right == next_point:
+	if indices[1] == next_point:
 		most_right = len(new_convex)-1
+		#print("adding most_right: ",most_right)
 
 		#then append the right lower bound
 	next_point = lower_tangent[0]
 
 	if next_point != upper_tangent[0]:
 		new_convex.append(left_convex[lower_tangent[0]])
-		if most_left == next_point:
+		if indices[0] == next_point:
 			most_left = len(new_convex)-1
+			#print("adding most_left1: ",most_left)
 		next_point = (lower_tangent[0] + 1)%num_of_left_points
 		while next_point != upper_tangent[0]:
 			new_convex.append(left_convex[next_point])
-			if most_left == next_point:
+			if indices[0] == next_point:
 				most_left = len(new_convex)-1
+				#print("adding most_left2: ",most_left)
 			next_point = (next_point + 1)%num_of_left_points
 
+	new_convex.append(1)
 	new_convex.append([most_left, most_right])
-	print("new merged convex with indicis: ", new_convex)
+	#print("new merged convex with indicis: ", new_convex)
 	return new_convex	#this is new convex hell without inner points
 
 
@@ -208,7 +228,8 @@ def make_convex_hell(array):
 			most_left = 0	#initialize with some index, cannot be 0
 			most_right = len(array)-1	#initialize with some index, cannot be 0
 			indices = [most_left, most_right]
-			print("base case array and indicis: ", array, indices)
+			#print("base case array and indicis: ", array, indices)
+			array.append(0)	#mark it that it will be processed
 			array.append(indices)	#at the end append indices of the left and right points
 			return array	#this is base case when 3 points are convex hell
 		else:
@@ -228,19 +249,20 @@ def make_convex_hell(array):
 
 try:
 	#generate random, but uniq points no x and y coordinates are same
-	#uniq_points = gen_rand_uniq_points(10,10,7)
+	uniq_points = gen_rand_uniq_points(10000,10000,600)
 	#sort based on x coordinate
-	uniq_points = [[0, 9], [1, 0], [2, 1],[3, 8], [5, 3],[6, 5], [7, 7]]
+	#uniq_points = [[0, 3], [1, 0], [2, 9],[3, 1], [4, 7],[5, 6], [7, 5]]
 
 	uniq_points = sorted(uniq_points, key=itemgetter(0))
 	convex_hell = make_convex_hell(uniq_points)
 	indices = convex_hell.pop()
-	print("indices at the end ", indices)
-	print ("convex_hell ", convex_hell)
+	proces_mark = convex_hell.pop()
+	#print("indices at the end ", indices)
+	#print ("convex_hell ", convex_hell)
 
 	x_points = []
 	y_points = []
-	plt.axis([-1, 11, -1, 11])
+	plt.axis([-100, 10100, -100, 10100])
 	for point in uniq_points:
 		plt.plot(point[0],point[1], 'ro')
 	for point in convex_hell:
