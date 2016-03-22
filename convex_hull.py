@@ -54,26 +54,32 @@ def get_tangents(left_hell, right_hell):
 			if (get_y_intersection(left_hell[0],left_hell[2],left_hell[1][0]) < left_hell[1][1]):
 				left_hell = [left_hell[2],left_hell[0],left_hell[1]]
 				left_indices = [1,0]
+				left_hell_most_right_index = 0
 				#this created clockwise order from right, bottom and up
 			else:
 				left_hell = [left_hell[2],left_hell[1],left_hell[0]]
 				left_indices = [2,0]
+				left_hell_most_right_index = 0
 		else:	#exactly 2 points
 			left_hell = [left_hell[1],left_hell[0]]
 			left_indices = [1,0]
+			left_hell_most_right_index = 0
 	if num_of_right_points < 4:
 		if num_of_right_points > 2:	# here must be different num for same clockwise
 			if (get_y_intersection(right_hell[0],right_hell[2],right_hell[1][0]) < right_hell[1][1]):
 				right_hell = [right_hell[0],right_hell[1],right_hell[2]]
 				right_indices = [0,2]
+				right_hell_most_left_index = 0
 			else:
 				right_hell = [right_hell[0],right_hell[2],right_hell[1]]
 				right_indices = [0,1]
+				right_hell_most_left_index = 0
 		else:
 			right_indices = [0,1]
+			right_hell_most_left_index = 0
 	#now the arrays are ordered clockwise form the middle line
-	i = 0	# the most right point on X in left hell
-	j = 0	#the most left point on X in right hell
+	i = left_hell_most_right_index	# the most right point on X in left hell
+	j = right_hell_most_left_index	#the most left point on X in right hell
 	print("already numbered left hell: ", left_hell)
 	print("already numbered right hell: ", right_hell)
 	result1 = get_y_intersection(left_hell[i],right_hell[(j+1)%num_of_right_points], x_of_line)
@@ -101,8 +107,8 @@ def get_tangents(left_hell, right_hell):
 	upper_tangent = [i,j]	#array of indices which represent points coords.
 	#print("upper tangent ", upper_tangent)
 	#here starts get lower tangent
-	i = 0	# reset the most right point on X
-	j = 0	# reset the most left point on X
+	i = left_hell_most_right_index	# reset the most right point on X
+	j = right_hell_most_left_index	# reset the most left point on X
 
 	result5 = get_y_intersection(left_hell[i],right_hell[(j-1)%num_of_right_points], x_of_line)
 	result6 = get_y_intersection(left_hell[i],right_hell[j], x_of_line)
@@ -140,32 +146,55 @@ def merge_convex_hells(left_convex, right_convex, tangents, indices):
 	lower_tangent = tangents[1]	#extract lower tangent
 	num_of_left_points = len(left_convex)
 	num_of_right_points = len(right_convex)
+	most_left = indices[0]
+	most_right = indices[1]
 	print("upper_tangent ", upper_tangent)
 	print("lower_tangent ", lower_tangent)
 	#start with upper_tangent
 	print("left_convex ", left_convex)
 	print("right_convex ", right_convex)
 	print("old indicis: ", indices)
-	new_convex = [left_convex[upper_tangent[0]]]
+
+	if most_left == upper_tangent[0]:	# if the upper tangent is most left point
+		new_convex = [left_convex[upper_tangent[0]]]
+		most_left = 0
+	else:
+		new_convex = [left_convex[upper_tangent[0]]]
+
 	next_point = upper_tangent[1]
+	if most_right == next_point:	# if the upper tangent is most right point
+		most_right = 1
+
 	if next_point != lower_tangent[1]:
 		new_convex.append(right_convex[upper_tangent[1]])
 		next_point = (upper_tangent[1]+1)%num_of_right_points
+		if most_right == next_point:
+			most_right = 2
 		while next_point != lower_tangent[1]:
 			new_convex.append(right_convex[next_point])
+			if most_right == next_point:
+				most_right = len(new_convex)-1
 			next_point = (next_point + 1)%num_of_right_points
 
 	new_convex.append(right_convex[next_point])	# if ther is only one point for upper and lower tangents
+	if most_right == next_point:
+		most_right = len(new_convex)-1
+
 		#then append the right lower bound
 	next_point = lower_tangent[0]
+
 	if next_point != upper_tangent[0]:
 		new_convex.append(left_convex[lower_tangent[0]])
+		if most_left == next_point:
+			most_left = len(new_convex)-1
 		next_point = (lower_tangent[0] + 1)%num_of_left_points
 		while next_point != upper_tangent[0]:
 			new_convex.append(left_convex[next_point])
+			if most_left == next_point:
+				most_left = len(new_convex)-1
 			next_point = (next_point + 1)%num_of_left_points
 
-	new_convex.append(indices)
+	new_convex.append([most_left, most_right])
 	print("new merged convex with indicis: ", new_convex)
 	return new_convex	#this is new convex hell without inner points
 
@@ -201,7 +230,7 @@ try:
 	#generate random, but uniq points no x and y coordinates are same
 	#uniq_points = gen_rand_uniq_points(10,10,7)
 	#sort based on x coordinate
-	uniq_points = [[0, 6], [2, 0], [3, 3],[4, 2], [6, 7],[8, 5], [9, 4]]
+	uniq_points = [[0, 9], [1, 0], [2, 1],[3, 8], [5, 3],[6, 5], [7, 7]]
 
 	uniq_points = sorted(uniq_points, key=itemgetter(0))
 	convex_hell = make_convex_hell(uniq_points)
